@@ -1,6 +1,103 @@
+//Phillip Burlachenko Spring 22 file system prog5ez Task4
+import java.io.FilenameFilter;
 import java.util.*; // SysLib_org.java
 
 public class SysLib {
+/*************************************ADDED METHODS FROM PROG5EZ***************************************/
+    /**
+     * Format method used to format the blocks in the file system
+     * @param files number of blocks (files) to format on the disk 
+     * @return kernel.Format 
+     */
+    public static int format(int files){
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+                Kernel.FORMAT, files, null);
+    }
+    
+    /**
+     * Open method opens a file that will be used in the filesystem 
+     * and has the abilit to open in either read/write modes (passed in)
+     * @param fileName name of file that is to be opened
+     * @param mode read/write mode 
+     * @return kernel.OPEN
+     */
+    public static int open(String fileName, String mode){
+        String[] args = new String[2];
+        args[0] = fileName;
+        args[1] = mode;
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+                Kernel.OPEN, 0, args);
+    }
+
+    /**
+     * Read method reads the bytes from a passed in file descripter to a byte array buffer
+     * @param fd file descripter (used to read from)
+     * @param buffer byte array to read from 
+     * @return kernel.READ
+     */
+    public static int read(int fd, byte buffer[]){
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+                Kernel.READ, fd, buffer);
+    }
+
+    /**
+     * Write method writes the bytes from a passed in file descripter to a byte array buffer
+     * @param fd file descripter (used to write to)
+     * @param buffer byte array to write to
+     * @return kernel.write
+     */
+    public static int write(int fd, byte buffer[]){
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+                Kernel.WRITE, fd, buffer);
+    }
+
+    /**
+     * Seek method updates the seek pointer correspond to fd. The pointer can move forwards or in reverse. 
+     * @param fd file descripter for the file using the seek pointer
+     * @param offset the offset value for the file pointer
+     * @param whence where the seek method operates from 
+     * @return
+     */
+    public static int seek(int fd, int offset, int whence){
+        int[] args = new int[2];
+        args[0] = offset;
+        args[1] = whence;
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+                Kernel.SEEK, fd, args);
+    }
+
+    /**
+     * Close method used to close the file corresponding to the file descriptor. 
+     * @param fd file descripter
+     * @return Kernel.CLOSE
+     */
+    public static int close(int fd){
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+                Kernel.CLOSE, fd, null);
+    }
+
+    /**
+     * Delete method helps delete a file specified by file name. 
+     * @param fileName string of file name
+     * @return kernel.delete
+     */
+    public static int delete(String fileName){
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+            Kernel.DELETE, 0, fileName);
+    }
+
+    /**
+     * fsize method returns the size in bytes of the file indicated by the file descripter 
+     * @param fd file descriptor 
+     * @return kernel.size 
+     */
+    public static int fsize(int fd){
+        return Kernel.interrupt(Kernel.INTERRUPT_SOFTWARE, 
+            Kernel.SIZE, fd, null);
+    }
+   
+/*************************************END OF ADDED METHODS FROM PROG5EZ***************************************/    
+
     public static int exec( String args[] ) {
         return Kernel.interrupt( Kernel.INTERRUPT_SOFTWARE,
 				 Kernel.EXEC, 0, args );
@@ -115,4 +212,5 @@ public class SysLib {
 	        ((b[offset+2] & 0xff) << 8) + (b[offset+3] & 0xff);
 	return n;
     }
+
 }
