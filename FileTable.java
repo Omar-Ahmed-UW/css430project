@@ -41,7 +41,7 @@ public class FileTable {
                 break;
             }
             if (inode.flag == 1 || inode.flag == 2) {
-                inode.flag = (inode.flag + 3);
+                inode.flag = (short)(inode.flag + 3);
                 inode.toDisk(s);
             }
             try {
@@ -56,9 +56,9 @@ public class FileTable {
         } else {
             return null;
         }
-        inode.count = (inode.count + 1);
+        inode.count = (short)(inode.count + 1);
         inode.toDisk(s);
-        FileTableEntry fileTableEntry = new FileTableEntry(inode, s, string2);
+        FileTableEntry fileTableEntry = new FileTableEntry(inode, s, mode);
         table.addElement(fileTableEntry);
         return fileTableEntry;
     }
@@ -69,7 +69,7 @@ public class FileTable {
         // free this file table entry. 
         // return true if this file table entry found in my table
         if (table.removeElement(e)) {
-            e.inode.count = e.inode.count - 1;
+            e.inode.count = (short)(e.inode.count - 1);
             // switch (e.inode.flag) {
             //     case 1: {
             //         e.inode.flag = 0;

@@ -260,7 +260,7 @@ public class Kernel
     */
    private static FileTableEntry getFileTableEntry(int fd) {
        TCB tcb = scheduler.getMyTcb();
-       return tcb != null ? tcb.getfileTableEntry(fd) : null;
+       return tcb != null ? tcb.getFtEnt(fd) : null;
    }
    
    // Spawning a new thread

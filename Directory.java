@@ -13,16 +13,17 @@ public class Directory {
     public Directory( int maxInumber ) { // directory constructor 
         fsizes = new int[maxInumber];     // maxInumber = max files 
         for ( int i = 0; i < maxInumber; i++ )  
-            fsize[i] = 0;                 // all file size initialized to 0 
+            fsizes[i] = 0;                 // all file size initialized to 0 
         fnames = new char[maxInumber][maxChars]; 
         String root = "/";                // entry(inode) 0 is "/" 
-        fsize[0] = root.length( );        // fsize[0] is the size of "/". 
+        fsizes[0] = root.length( );        // fsize[0] is the size of "/". 
         root.getChars( 0, fsizes[0], fnames[0], 0 ); // fnames[0] includes "/" 
     } 
 
     public void bytes2directory( byte data[] ) { 
         // assumes data[] contains directory information retrieved from disk                                                      
-        // initialize the directory fsizes[] and fnames[] with this data[]                                                        
+        // initialize the directory fsizes[] and fnames[] with this data[] 
+        if(data.length == 0|| data == null) {return;}                                                      
         int offset = 0; 
         for ( int i = 0; i < fsizes.length; i++, offset += 4 ) 
             fsizes[i] = SysLib.bytes2int( data, offset ); 
@@ -50,11 +51,13 @@ public class Directory {
     } 
 
     public short ialloc(String filename) {
-        for (short s = 1; s < fsizes.length; s = s + 1) {
+        if(filename == null || filename.isEmpty()){return -1;}
+        if(filename.length() > maxChars){return Kernel.ERROR;}
+        for (int s = 1; s < fsizes.length; s++) {
             if (fsizes[s] == 0){
                 fsizes[s] = Math.min(filename.length(), maxChars);
                 filename.getChars(0, fsizes[s], fnames[s], 0);
-                return s;
+                return (short)s;
             }
         }
         return -1;
@@ -69,10 +72,11 @@ public class Directory {
     }
 
     public short namei(String filename) {
-        for (short s = 0; s < fsizes.length; s = s + 1) {
+        if(filename == null || filename.isEmpty()){return -1;}
+        for (int s = 0; s < fsizes.length; s = s + 1) {
             String otherFileName;
             if (fsizes[s] == filename.length() || filename.compareTo(otherFileName = new String(fnames[s], 0, fsizes[s])) == 0){
-                return s;
+                return (short)s;
             }
         }
         return -1;

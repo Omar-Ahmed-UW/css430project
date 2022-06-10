@@ -2,15 +2,17 @@
  * @Authors Phillip Burlachenko, Omar Ahmed
  * @File FileSystem.java
  * @Date 6/3/22
+ * Worked on
+ * Phillip: FileSystem(), sync(), format(), open(), close(), fsize(), read()
+ * Omar: write(), deallocateBlocks(), delete(), seek() 
  */
-public class FileSystem {
-    private SuperBlock superblock;
-    private Directory directory;
-    private FileTable filetable;
+public class FileSystem{
+    private SuperBlock superBlock;
+    private FileTable fileTable;
+    private Directory directory; 
     private final int SEEK_SET = 0;
     private final int SEEK_CUR = 1;
     private final int SEEK_END = 2;
-
     /**
      * The constructor for FileSystem class. 
      * @param diskBlock the disk blocks passed in to operate on the file system. 
@@ -19,7 +21,7 @@ public class FileSystem {
         //create a super block with disk blocks 
         superBlock = new SuperBlock(diskBlock);
         //create directory and register "/" inside directory entry @ 0
-        directory = new Directory(superBlock.totalInodes);
+        directory = new Directory(superBlock.inodeBlocks);
         //create file table, then store directory inside file table. 
         fileTable = new FileTable(directory);
 
@@ -27,10 +29,10 @@ public class FileSystem {
 
         int directorySize = fsize(directoryEntry);
 
-        if(0 < directorySize){
+        if(directorySize > 0){
             byte[] directoryData = new byte[directorySize];
             read(directoryEntry, directoryData);
-            directory.bytestodirectory(directoryData);
+            directory.bytes2directory(directoryData);
         }
 
         close(directoryEntry);
@@ -64,7 +66,7 @@ public class FileSystem {
         }
 
         superBlock.format(fileToForm);
-        directory = new Directory(superBlock.totalInodes);
+        directory = new Directory(superBlock.inodeBlocks);
         fileTable = new FileTable(directory);
         return true;
     }
@@ -77,10 +79,17 @@ public class FileSystem {
      * @return returns a file table entry resulting from operations on the provided file and mode
      */
     public FileTableEntry open(String fileName, String mode){
+        if(fileName == null || fileName.length() == 0){
+            return null;
+        }
         //allocate new file table entry
         FileTableEntry fileTableEntry = fileTable.falloc(fileName, mode);
+
+        if(fileTableEntry == null){
+            return null;
+        }
         //check if mode is "w" and dealloc call returns false, then return null
-        if(fileTableEntry.mode.compareTo("w") == 0 && !deallocAllBlocks(fileTableEntry)){
+        if(fileTableEntry.mode.equals("w") && !deallocAllBlocks(fileTableEntry)){
             return null;
         }
         return fileTableEntry; //otherwise open operation worked on file table entry, so return
@@ -131,7 +140,7 @@ public class FileSystem {
 
         synchronized(fileTableEntry){
             //iterate until length of file on entries matches the buffer size. make sure the buffer isnt maxed
-            while(fileTableEntry.seekPtr < fsize(fileTableEntry) && 0 < sizeTotal){
+            while(fileTableEntry.seekPtr < fsize(fileTableEntry) && buffLength > 0){
                 //capture the block number where the file entry seekPptr points to. (0)
                 int blockNumber = fileTableEntry.inode.findTargetBlock(fileTableEntry.seekPtr);
                 //check if we are at valid block
@@ -160,7 +169,7 @@ public class FileSystem {
                     //update the location of the seekptr pointer 
                     fileTableEntry.seekPtr += dataLeftRead;
                     //update the total size 
-                    sizeTotal -= dataLeftRead;
+                    buffLength -= dataLeftRead;
               
                 }
                 //if invalid data (location), break out of loop 
@@ -199,10 +208,10 @@ public class FileSystem {
             while (size > 0) {
                 int blockNum = fileTableEntry.inode.findTargetBlock(fileTableEntry.seekPtr);
                 if (blockNum == -1) {
-                    short freeBlock = (short)this.superblock.getFreeBlock();
+                    short freeBlock = (short)this.superBlock.getFreeBlock();
                     switch(fileTableEntry.inode.registerTargetBlock(fileTableEntry.seekPtr, freeBlock)) {
                         case -3:
-                            short nextFreeBlock = (short)this.superblock.getFreeBlock();
+                            short nextFreeBlock = (short)this.superBlock.getFreeBlock();
                             if (!fileTableEntry.inode.registerIndexBlock(nextFreeBlock)) {
                                 SysLib.cerr("ThreadOS: panic on write\n");
                                 return -1;
@@ -265,13 +274,13 @@ public class FileSystem {
             short index;
             // call returnBlock function of superblock.
             while ((index = SysLib.bytes2short(temp, 0)) != -1) {
-                superblock.returnBlock(index);
+                superBlock.returnBlock(index);
             }
         }
 
         for (int i = 0; i < fileTableEntry.inode.directSize; i++) {
             if (fileTableEntry.inode.direct[i] != -1) {
-                superblock.returnBlock(fileTableEntry.inode.direct[i]);
+                superBlock.returnBlock(fileTableEntry.inode.direct[i]);
                 fileTableEntry.inode.direct[i] = -1;
             }
         }
@@ -290,7 +299,7 @@ public class FileSystem {
     public boolean delete(String filename) {
         FileTableEntry fileTableEntry = open(filename, "w");
         // delete file and return true.
-        short FTINumber = fileTableEntry.FTINumber;
+        short FTINumber = fileTableEntry.iNumber;
         if (close(fileTableEntry) && directory.ifree(FTINumber)){
             return true;
         }
@@ -331,4 +340,5 @@ public class FileSystem {
             return fileTableEntry.seekPtr;
         }
     }
+
 }
