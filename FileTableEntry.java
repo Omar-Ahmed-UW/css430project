@@ -1,3 +1,10 @@
+/*
+ * 
+ * Author: Omar Ahmed
+ * File: FileTable.java
+ * Date: 6/2/22
+ * 
+ */
 public class FileTableEntry {  // Each table entry should have
     public int seekPtr;        //    a file seek pointer
     public final Inode inode;  //    a reference to an inode

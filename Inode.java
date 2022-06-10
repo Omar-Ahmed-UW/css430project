@@ -1,3 +1,10 @@
+/*
+ * 
+ * Author: Phillip Burlachenko
+ * File: FileTable.java
+ * Date: 6/2/22
+ * 
+ */
 public class Inode {
     public final static int iNodeSize = 32;  // fixed to 32 bytes
     public final static int directSize = 11; // # direct pointers

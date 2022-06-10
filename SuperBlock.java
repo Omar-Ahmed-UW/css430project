@@ -1,5 +1,10 @@
-//Phillip Burlachenko Spring 22 file system prog5ez Task5
-//SuperBlock.java 
+/*
+ * 
+ * Author: Phillip Burlachenko
+ * File: SuperBlock.java
+ * Date: 6/2/22
+ * 
+ */
 public class SuperBlock{
     private final int defaultInodeBlocks = 64;
     public int totalBlocks; //the number of disk blocks

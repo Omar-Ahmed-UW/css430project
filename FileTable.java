@@ -70,23 +70,6 @@ public class FileTable {
         // return true if this file table entry found in my table
         if (table.removeElement(e)) {
             e.inode.count = (short)(e.inode.count - 1);
-            // switch (e.inode.flag) {
-            //     case 1: {
-            //         e.inode.flag = 0;
-            //         break;
-            //     }
-            //     case 2: {
-            //         e.inode.flag = 0;
-            //         break;
-            //     }
-            //     case 4: {
-            //         e.inode.flag = 3;
-            //         break;
-            //     }
-            //     case 5: {
-            //         e.inode.flag = 3;
-            //     }
-            // }
             if(e.inode.count == 1 || e.inode.count == 2){
                 e.inode.flag = 0;
             } else if(e.inode.count == 4 || e.inode.count == 5) {
