@@ -1,9 +1,9 @@
-//Phillip Burlachenko Spring 22 final project hw5 
+//Phillip Burlachenko Spring 22 file system prog5ez Task5
 //SuperBlock.java 
 public class SuperBlock{
     private final int defaultInodeBlocks = 64;
     public int totalBlocks; //the number of disk blocks
-    public int totalInodes; // the number of inodes
+    public int inodeBlocks; // the number of inodes
     public int freeList; // the block numebr of the free lists head 
 /**
  * Constructor
@@ -20,19 +20,20 @@ public class SuperBlock{
         SysLib.rawread(0, superBlock);
         //get assignments from blocks at locations 0,4,8
         totalBlocks = SysLib.bytes2int(superBlock, 0);
-        totalInodes = Syslib.bytes2int(superBlock, 4);
+        inodeBlocks = SysLib.bytes2int(superBlock, 4);
         freeList = SysLib.bytes2int(superBlock, 8);
         //check if disk block size is valid
-        if (totalBlocks == diskSize && totalInodes > 0 && freeList >= 2){
+        if (totalBlocks == diskSize && inodeBlocks > 0 && freeList >= 2){
             //disk contents are valid
             return;
         }
-        else{
-            //format to disk & and call format 
-            totalBlocks = diskSize;
-            format(defaultInodeBlocks);
-        }
+        
+        //format to disk & and call format 
+        totalBlocks = diskSize;
+        format(defaultInodeBlocks);
+ 
     }
+
 /**
  * Sync method updates the superblock at block zero in the disk with the actions performed on the super class instance (this). 
  * The method works by writing back the in memory superlock to the disk using syslib.rarwrite. This includes the total number of blocks, inodes, and the free list. 
@@ -40,9 +41,9 @@ public class SuperBlock{
     void sync(){
         //initialize the new block to byte block array of disk block size
         byte[] tempBlock = new byte[Disk.blockSize];
-        Syslib.int2bytes(totalBlocks, tempBlock, 0);
-        Syslib.int2bytes(totalInodes, tempBlock, 4);
-        Syslib.int2bytes(freeList, tempBlock, 8);
+        SysLib.int2bytes(totalBlocks, tempBlock, 0);
+        SysLib.int2bytes(inodeBlocks, tempBlock, 4);
+        SysLib.int2bytes(freeList, tempBlock, 8);
         //write back to disk zero using rawwrite 
         SysLib.rawwrite(0, tempBlock);
     }
@@ -63,13 +64,10 @@ public class SuperBlock{
             //free block exists
             //get block from queue and write back. 
             byte[] tempBlock = new byte[Disk.blockSize];
-            Syslib.rawread(freeBlock, tempBlock);
-            this.freeList = SysLib.bytes2int(tempBlock,0);
-            Syslib.int2bytes(0, tempBlock, 0);
-            Syslib.rawwrite(freeBlock, tempBlock);
+            SysLib.rawread(freeBlock, tempBlock);
+            freeList = SysLib.bytes2int(tempBlock,0);
             return freeBlock;
         }
-        return -1;
     }
 
     /**
@@ -105,19 +103,19 @@ public class SuperBlock{
  */
     void format( int files){
         //for superblock
-        totalInodes = files;
+        inodeBlocks = files;
         //set default if invalid number passed in
         if(files < 0){
-            totalInodes = defaultInodeBlocks;
+            inodeBlocks = defaultInodeBlocks;
         }
         //initialize and set the tempNodes (includes flag)
-        for(int i = 0; i < totalInodes; i++){
+        for(int i = 0; i < inodeBlocks; i++){
             Inode tempNode = new Inode();
             tempNode.flag = 0;
             tempNode.toDisk((short)i);
         }
         //initialize and set freelist 
-        freeList = 2 + totalInodes * 32 / Disk.blockSize;
+        freeList = 2 + inodeBlocks * 32 / Disk.blockSize;
         //iterate through freelist, initialize and set new blocks
         for(int i = freeList; i < totalBlocks; i++){
             //create temp block of disk block size (should be 512bytes)
