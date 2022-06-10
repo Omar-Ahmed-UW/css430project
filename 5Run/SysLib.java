@@ -1,3 +1,11 @@
+/*
+ * 
+ * Author: Phillip Burlachenko
+ * File: Directory.java
+ * Date: 6/6/22
+ * 
+ */
+
 import java.util.*;
 
 public class SysLib {

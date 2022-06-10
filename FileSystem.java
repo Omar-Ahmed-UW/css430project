@@ -6,6 +6,7 @@
  * Phillip: FileSystem(), sync(), format(), open(), close(), fsize(), read()
  * Omar: write(), deallocateBlocks(), delete(), seek() 
  */
+
 public class FileSystem{
     private SuperBlock superBlock;
     private FileTable fileTable;
@@ -110,8 +111,13 @@ public class FileSystem{
      * @param fileTableEntry fte
      * @return the integer size of the file size
      */
-    public int fsize(FileTableEntry fileTableEntry){
-        return fileTableEntry.inode.length;
+    public int fsize(FileTableEntry ftEntry) {
+        if(ftEntry == null){
+            return 0;
+        }
+        synchronized (ftEntry) {
+            return ftEntry.inode.length;
+        }
     }
 
     /**
